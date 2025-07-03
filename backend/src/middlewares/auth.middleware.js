@@ -4,19 +4,11 @@ import User from "../models/user.model.js";
 
 export const validateSignup = (req, res, next) => {
   const fullName = req.body.fullName?.trim();
-  const email = req.body.email?.trim();
+  const email = req.body.email?.trim().toLowerCase();
   const password = req.body.password;
 
   if (!fullName || !email || !password) {
-    return res.status(400).json({
-      message: "All fields are required",
-    });
-  }
-
-  if (fullName.replace(/\s/g, "").length < 3) {
-    return res.status(400).json({
-      message: "Full name must be at least 3 letters long",
-    });
+    return res.status(400).json({ message: "All fields are required" });
   }
 
   if (!/^[\p{L} '-]+$/u.test(fullName)) {
@@ -27,16 +19,18 @@ export const validateSignup = (req, res, next) => {
   }
 
   if (!validator.isEmail(email)) {
-    return res.status(400).json({
-      message: "Invalid email format",
-    });
+    return res.status(400).json({ message: "Invalid email format" });
   }
 
   if (!validator.isLength(password, { min: 6 })) {
-    return res.status(400).json({
-      message: "Password must be at least 6 characters long",
-    });
+    return res
+      .status(400)
+      .json({ message: "Password must be at least 6 characters long" });
   }
+
+  // Overwrite the body with trimmed & normalized data
+  req.body.fullName = fullName;
+  req.body.email = email;
 
   next();
 };
@@ -56,6 +50,8 @@ export const validateLogin = (req, res, next) => {
       message: "Invalid email format",
     });
   }
+
+  req.body.email = email;
 
   next();
 };
@@ -95,16 +91,4 @@ export const protectRoute = async (req, res, next) => {
       message: "Internal server error",
     });
   }
-};
-
-export const validateUpdateProfile = (req, res, next) => {
-  const profilePicture = req.body.profilePicture?.trim();
-
-  if (!profilePicture) {
-    return res.status(400).json({
-      message: "Profile picture is required",
-    });
-  }
-
-  next();
 };

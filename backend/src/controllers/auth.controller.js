@@ -7,7 +7,7 @@ export const signup = async (req, res) => {
   const { fullName, email, password } = req.body;
 
   try {
-    const user = await User.findOne({ email: email });
+    const user = await User.findOne({ email });
 
     if (user) {
       return res.status(400).json({
@@ -94,35 +94,55 @@ export const logout = (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const { profilePicture } = req.body;
+    if (!req.user) return res.status(404).json({ message: "User not found" });
 
-    if (!req.user) {
-      return res.status(404).json({
-        message: "User not found",
+    // Handle remove request first
+    if (req.body.remove === "true") {
+      req.user.profilePicture = "";
+      await req.user.save();
+
+      return res.status(200).json({
+        message: "Profile picture removed successfully",
+        updatedUser: {
+          _id: req.user._id,
+          fullName: req.user.fullName,
+          email: req.user.email,
+          profilePicture: req.user.profilePicture,
+        },
       });
     }
 
-    const result = await cloudinary.uploader.upload(profilePicture, {
-      folder: "talksy/profile_pictures",
-    });
+    // Handle image upload if a file is provided
+    if (req.file) {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { folder: "talksy/profile_pictures" },
+        async (error, result) => {
+          if (error) {
+            console.error("Cloudinary error:", error);
+            return res.status(500).json({ message: "Upload failed" });
+          }
 
-    req.user.profilePicture = result.secure_url;
-    await req.user.save();
+          req.user.profilePicture = result.secure_url;
+          await req.user.save();
 
-    return res.status(200).json({
-      message: "Profile picture updated successfully",
-      updatedUser: {
-        _id: req.user._id,
-        fullName: req.user.fullName,
-        email: req.user.email,
-        profilePicture: req.user.profilePicture,
-      },
-    });
+          return res.status(200).json({
+            message: "Profile picture updated successfully",
+            updatedUser: {
+              _id: req.user._id,
+              fullName: req.user.fullName,
+              email: req.user.email,
+              profilePicture: req.user.profilePicture,
+            },
+          });
+        }
+      );
+      uploadStream.end(req.file.buffer);
+    } else {
+      return res.status(400).json({ message: "No image file provided" });
+    }
   } catch (err) {
-    console.error("Error: ", err.message);
-    return res.status(500).json({
-      message: "Internal server error",
-    });
+    console.error("Error:", err);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 

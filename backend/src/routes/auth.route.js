@@ -10,10 +10,11 @@ import {
   validateLogin,
   validateSignup,
   protectRoute,
-  validateUpdateProfile,
 } from "../middlewares/auth.middleware.js";
+import multer from "multer";
 
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.post("/signup", validateSignup, signup);
 router.post("/login", validateLogin, login);
@@ -21,7 +22,7 @@ router.post("/logout", logout);
 router.put(
   "/update-profile",
   protectRoute,
-  validateUpdateProfile,
+  upload.single("profilePicture"),
   updateProfile
 );
 router.get("/check", protectRoute, checkAuth);
