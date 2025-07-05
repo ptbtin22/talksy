@@ -103,12 +103,7 @@ export const updateProfile = async (req, res) => {
 
       return res.status(200).json({
         message: "Profile picture removed successfully",
-        updatedUser: {
-          _id: req.user._id,
-          fullName: req.user.fullName,
-          email: req.user.email,
-          profilePicture: req.user.profilePicture,
-        },
+        updatedUser: req.user.toObject(),
       });
     }
 
@@ -127,12 +122,7 @@ export const updateProfile = async (req, res) => {
 
           return res.status(200).json({
             message: "Profile picture updated successfully",
-            updatedUser: {
-              _id: req.user._id,
-              fullName: req.user.fullName,
-              email: req.user.email,
-              profilePicture: req.user.profilePicture,
-            },
+            updatedUser: req.user.toObject(),
           });
         }
       );
@@ -142,7 +132,7 @@ export const updateProfile = async (req, res) => {
     }
   } catch (err) {
     console.error("Error:", err);
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: err.message });
   }
 };
 
