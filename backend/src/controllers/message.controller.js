@@ -1,5 +1,6 @@
 import User from "../models/user.model.js";
 import Message from "../models/message.model.js";
+import cloudinary from "../lib/cloudinary.js";
 
 export const getUsers = async (req, res) => {
   try {
@@ -43,32 +44,51 @@ export const getMessages = async (req, res) => {
 
 export const sendMessage = async (req, res) => {
   try {
-    const { text, image } = req.body;
     const { id: receiverId } = req.params;
+    const { text } = req.body;
 
-    const senderId = req.user._id;
+    if (!text && !req.file) {
+      return res.status(400).json({
+        message: "Message text or image is required",
+      });
+    }
 
     let imageUrl;
 
-    if (image) {
-      // Upload image to cloudinary
-      const uploadResult = await cloudinary.uploader.upload(image, {
-        folder: "messages",
+    if (req.file) {
+      const result = cloudinary.uploader.upload_stream(
+        { folder: "talksy/messages" },
+        async (error, result) => {
+          if (error) {
+            console.error("Cloudinary upload error:", error);
+            return res.status(500).json({
+              message: "Failed to upload image",
+            });
+          }
+
+          imageUrl = result.secure_url;
+
+          const message = await Message.create({
+            senderId: req.user._id,
+            receiverId,
+            text,
+            image: imageUrl,
+          });
+
+          return res.status(201).json(message);
+        }
+      );
+
+      result.end(req.file.buffer);
+    } else {
+      const message = await Message.create({
+        senderId: req.user._id,
+        receiverId,
+        text,
       });
-      imageUrl = uploadResult.secure_url;
+
+      return res.status(201).json(message);
     }
-
-    const newMessage = new Message({
-      senderId,
-      receiverId,
-      text,
-      image: imageUrl,
-    });
-
-    await newMessage.save();
-
-    // TODO: real time functionality goes here => socket.io
-    return res.status(201).json(newMessage);
   } catch (err) {
     console.log("Error:", err.message);
     return res.status(500).json({

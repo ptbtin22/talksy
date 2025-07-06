@@ -14,3 +14,9 @@ export const generateToken = (userId, res) => {
 
   return token;
 };
+
+export const sanitizeUser = (user) => {
+  const userObj = user.toObject();
+  delete userObj.password; // Remove password from response
+  return userObj;
+};

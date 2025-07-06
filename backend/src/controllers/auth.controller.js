@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import User from "../models/user.model.js";
-import { generateToken } from "../lib/utils.js";
+import { generateToken, sanitizeUser } from "../lib/utils.js";
 import cloudinary from "../lib/cloudinary.js";
 
 export const signup = async (req, res) => {
@@ -27,12 +27,8 @@ export const signup = async (req, res) => {
     if (newUser) {
       generateToken(newUser._id, res);
       await newUser.save();
-      return res.status(201).json({
-        _id: newUser._id,
-        fullName: newUser.fullName,
-        email: newUser.email,
-        profilePicture: newUser.profilePicture,
-      });
+
+      return res.status(201).json(sanitizeUser(newUser));
     }
 
     return res.status(400).json({
@@ -59,6 +55,7 @@ export const login = async (req, res) => {
     }
 
     const isCorrectPassword = await bcrypt.compare(password, user.password);
+
     if (!isCorrectPassword) {
       return res.status(400).json({
         message: "Wrong password",
@@ -67,12 +64,7 @@ export const login = async (req, res) => {
 
     generateToken(user._id, res);
 
-    return res.status(200).json({
-      _id: user._id,
-      fullName: user.fullName,
-      email: user.email,
-      profilePicture: user.profilePicture,
-    });
+    return res.status(200).json(sanitizeUser(user));
   } catch (err) {
     console.error(err);
   }
