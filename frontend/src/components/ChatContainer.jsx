@@ -8,16 +8,29 @@ import { formatMessageTime } from "../lib/utils";
 
 const ChatContainer = () => {
   const { authUser } = useAuthStore();
-  const { isMessagesLoading, getMessages, selectedUser, messages } =
-    useChatStore();
+  const {
+    isMessagesLoading,
+    getMessages,
+    selectedUser,
+    messages,
+    subscribeToMessages,
+    unsubscribeFromMessages,
+  } = useChatStore();
 
   const messageEndRef = useRef(null);
 
   useEffect(() => {
-    if (selectedUser?._id) {
-      getMessages(selectedUser._id);
-    }
-  }, [selectedUser?._id, getMessages]);
+    getMessages(selectedUser._id);
+
+    subscribeToMessages();
+
+    return () => unsubscribeFromMessages();
+  }, [
+    selectedUser?._id,
+    getMessages,
+    subscribeToMessages,
+    unsubscribeFromMessages,
+  ]);
 
   useEffect(() => {
     if (messageEndRef.current && messages) {
@@ -47,7 +60,7 @@ const ChatContainer = () => {
             }`}
             ref={messageEndRef}
           >
-            <div className=" chat-image avatar">
+            {/* <div className=" chat-image avatar">
               <div className="size-10 rounded-full border">
                 <img
                   src={
@@ -58,7 +71,7 @@ const ChatContainer = () => {
                   alt="Profile Picture"
                 />
               </div>
-            </div>
+            </div> */}
             <div className="chat-header mb-1">
               <time className="text-xs opacity-50 ml-1">
                 {formatMessageTime(message.createdAt)}
