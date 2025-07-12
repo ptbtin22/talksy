@@ -1,12 +1,26 @@
-# React + Vite
+# 📬 About This Project
+This is a full-stack real-time chat application that enables instant 1-on-1 messaging using Socket.IO for live communication and Express for backend APIs. The frontend, built with React, Vite, and DaisyUI, seamlessly integrates with the backend to deliver smooth, responsive messaging experiences.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# 🚀 Tech stacks:
 
-Currently, two official plugins are available:
+- 🖼️ Frontend:
+  - React + Vite 
+  - TailwindCSS + DaisyUI
+  - Axios for API requests
+  - Zustand for state management
+- 🛠 Backend:
+  - NodeJS, Express
+  - MongoDB for data storage
+  - Socket.IO for real-time messaging
+  - Multer + Cloudinary for image upload
+- 🔐 Authentication and Validation:
+  - JWT (JsonWebToken) for session handling
+  - bcryptjs for password hashing
+  - Validator for input validation
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+# ✨ Features:
+- 🔐 Authentication: Sign up, log in, and secure sessions with JWT
+- 🎨 Theme Settings: Choose from 32 DaisyUI themes (light/dark/custom)
+- 🖼️ Profile Customization: Upload and update profile picture
+- 💬 Real-Time Messaging: Instantly send and receive messages via Socket.IO
+- 🧠 Smart UI: Latest conversations are auto-prioritized (new messages go to the top)
