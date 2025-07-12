@@ -138,3 +138,24 @@ export const checkAuth = (req, res) => {
     });
   }
 };
+
+export const getUser = async (req, res) => {
+  try {
+    const { id: userId } = req.params;
+
+    const user = await User.findById(userId).select("-password -__v");
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json(user);
+  } catch (err) {
+    console.log("Error:", err.message);
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};

@@ -4,12 +4,14 @@ import {
   getUsers,
   getMessages,
   sendMessage,
+  getMessagedUsers,
 } from "../controllers/message.controller.js";
 import multer from "multer";
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
+router.get("/messaged-users", protectRoute, getMessagedUsers);
 router.get("/users", protectRoute, getUsers);
 router.get("/:id", protectRoute, getMessages);
 router.post("/send/:id", protectRoute, upload.single("image"), sendMessage);

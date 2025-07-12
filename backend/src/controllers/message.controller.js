@@ -3,11 +3,86 @@ import Message from "../models/message.model.js";
 import cloudinary from "../lib/cloudinary.js";
 import { getReceiverSocketId, io } from "../lib/socket.js";
 
-export const getUsers = async (req, res) => {
+// controllers/message.controller.js
+export const getMessagedUsers = async (req, res) => {
+  const userId = req.user._id;
+
   try {
-    const users = await User.find({ _id: { $ne: req.user._id } }).select(
-      "-password -__v"
-    );
+    const recentConversations = await Message.aggregate([
+      {
+        $match: {
+          $or: [{ senderId: userId }, { receiverId: userId }],
+        },
+      },
+      {
+        $sort: { updatedAt: -1 },
+      },
+      {
+        $group: {
+          _id: {
+            $cond: [{ $eq: ["$senderId", userId] }, "$receiverId", "$senderId"],
+          },
+          lastMessageAt: { $first: "$updatedAt" },
+        },
+      },
+      {
+        $sort: { lastMessageAt: -1 },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      {
+        $unwind: "$user",
+      },
+      {
+        $project: {
+          user: {
+            _id: 1,
+            fullName: 1,
+            email: 1,
+            profilePicture: 1,
+          },
+          lastMessageAt: 1,
+        },
+      },
+    ]);
+
+    const users = recentConversations.map((conv) => conv.user);
+    res.status(200).json(users);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getUsers = async (req, res) => {
+  const currentUserId = req.user._id;
+  const searchQuery = req.query.query;
+
+  let filter = {
+    _id: { $ne: currentUserId },
+  };
+
+  if (searchQuery) {
+    filter.$or = [
+      { fullName: { $regex: searchQuery, $options: "i" } },
+      { email: { $regex: searchQuery, $options: "i" } },
+    ];
+  }
+
+  try {
+    const query = User.find(filter).select("-password -__v");
+
+    if (searchQuery) {
+      query.limit(10);
+    }
+
+    const users = await query;
 
     return res.status(200).json(users);
   } catch (err) {
@@ -30,6 +105,8 @@ export const getMessages = async (req, res) => {
         { senderId: otherUserId, receiverId: myUserId },
       ],
     });
+    // .sort({ updatedAt: -1 })
+    // .limit(10);
     // .sort({ createdAt: 1 })
     // .populate("receiverId", "-password -__v")
     // .populate("senderId", "-password -__v");

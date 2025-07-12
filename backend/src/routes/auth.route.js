@@ -5,6 +5,7 @@ import {
   logout,
   updateProfile,
   checkAuth,
+  getUser,
 } from "../controllers/auth.controller.js";
 import {
   validateLogin,
@@ -26,5 +27,6 @@ router.put(
   updateProfile
 );
 router.get("/check", protectRoute, checkAuth);
+router.get("/users/:id", getUser);
 
 export default router;

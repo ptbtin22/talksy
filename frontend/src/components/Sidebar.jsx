@@ -2,12 +2,17 @@ import { useEffect, useState } from "react";
 import { useChatStore } from "../stores/useChatStore";
 import { useAuthStore } from "../stores/useAuthStore";
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
-import { Users, MailPlus } from "lucide-react";
+import { Users } from "lucide-react";
 import NewMessageModal from "./NewMessageModal";
 
 const Sidebar = () => {
-  const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading } =
-    useChatStore();
+  const {
+    getMessagedUsers,
+    users,
+    selectedUser,
+    setSelectedUser,
+    isUsersLoading,
+  } = useChatStore();
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
 
   const { onlineUsers } = useAuthStore();
@@ -17,8 +22,9 @@ const Sidebar = () => {
     : users;
 
   useEffect(() => {
-    getUsers();
-  }, [getUsers]);
+    getMessagedUsers();
+    useChatStore.getState().subscribeToMessages();
+  }, [getMessagedUsers]);
 
   if (isUsersLoading) return <SidebarSkeleton />;
 
@@ -30,9 +36,7 @@ const Sidebar = () => {
             <Users className="size-6" />
             <span className="font-medium hidden lg:block">Contacts</span>
           </div>
-          <button className="size-8 flex items-center justify-center rounded-full hover:bg-gray-500/10 transition-colors">
-            <MailPlus className="size-5" />
-          </button>
+          <NewMessageModal />
         </div>
         {/* TODO: Online filter toggle */}
         <div className="mt-3 hidden lg:flex items-center gap-2">
@@ -46,7 +50,8 @@ const Sidebar = () => {
             <span className="text-sm">Show online only</span>
           </label>
           <span className="text-xs text-zinc-500">
-            ({onlineUsers.length - 1} online)
+            ({filteredUsers.filter((u) => onlineUsers.includes(u._id)).length}{" "}
+            online)
           </span>
         </div>
       </div>
